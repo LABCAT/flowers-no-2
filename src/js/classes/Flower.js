@@ -1,7 +1,7 @@
 
 export default class Flower {
 
-    constructor(p5,x,y) {
+    constructor(p5, x, y, hue) {
         this.p = p5;
         this.x = x;
         this.y = y;
@@ -15,10 +15,17 @@ export default class Flower {
         this.cp3y = Math.random() * p5.random(20, 80);
         this.cp4x = 0;
         this.cp4y = 0;
-        this.color = {
-            r: this.p.random(0, 255), 
-            g: this.p.random(0, 255), 
-            b: this.p.random(0, 255),
+        this.petalColor = {
+            r: hue, 
+            g: this.p.random(50, 100), 
+            b: this.p.random(50, 100),
+            a: this.p.random(50, 100),
+        }
+        this.pistilColor = {
+            r: hue + 90 > 360 ? hue - 90 : hue + 90, 
+            g: this.p.random(50, 100), 
+            b: this.p.random(50, 100),
+            a: this.p.random(50, 100),
         }
     }
 
@@ -34,20 +41,24 @@ export default class Flower {
         this.p.translate(this.x, this.y);
         this.p.push();
         this.p.noStroke();
-        this.p.fill(
-            this.color.r, 
-            this.color.g,
-            this.color.b
-        );
+        let hue = this.petalColor.r;
         for (let i = 0; i < this.petalCount * 2; i++) {
+            this.p.fill(
+                hue, 
+                this.petalColor.g,
+                this.petalColor.b,
+                this.petalColor.a
+            );
             this.p.strokeWeight(.25);
             this.makePetal();
             this.p.rotate(this.p.PI / this.petalCount);
+            hue = hue + 10 > 360 ? hue - 360 + 10 : hue + 10;
         }
         this.p.fill(
-            this.p.random(0, 255), 
-            this.p.random(0, 255), 
-            this.p.random(0, 255)
+            this.pistilColor.r, 
+            this.pistilColor.g,
+            this.pistilColor.b,
+            this.pistilColor.a
         );
         this.p.ellipse(0, 0, this.pistilRadius);
         this.p.pop();

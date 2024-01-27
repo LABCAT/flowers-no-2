@@ -34,7 +34,9 @@ const P5SketchWithAudio = () => {
                 function(result) {
                     console.log(result);
                     const noteSet1 = result.tracks[5].notes; // Synth 2 - Clockenspiel
+                    const noteSet2 = result.tracks[3].notes; // Synth 1 - Analog Replicant
                     p.scheduleCueSet(noteSet1, 'executeCueSet1');
+                    p.scheduleCueSet(noteSet2, 'executeCueSet2');
                     p.audioLoaded = true;
                     document.getElementById("loader").classList.add("loading--complete");
                     document.getElementById("play-icon").classList.remove("fade-out");
@@ -61,46 +63,77 @@ const P5SketchWithAudio = () => {
                     currentCue++;
                 }
             }
-        } 
+        }
+        
+        p.bgHue = 0;
+
+        p.bgSaturation = 0;
+        
+        p.bgBrightness = 0;
+
+        p.flowers = Array(20).fill(null);
 
         p.setup = () => {
             p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
-            p.background(0);
-            // p.colorMode(p.HSB);
+            p.colorMode(p.HSB);
+            p.background(p.bgHue, p.bgSaturation, p.bgBrightness);
             p.noLoop();
         }
 
         p.draw = () => {
-
-            // p.translate(p.width/2, p.height/2);
             if(p.audioLoaded && p.song.isPlaying()){
-
+                p.background(p.bgHue, p.bgSaturation, p.bgBrightness);
+                for (let i = 0; i < p.flowers.length; i++) {
+                    const flower = p.flowers[i];
+                    if(flower) {
+                        flower.draw();    
+                    }
+                }
             }
-
-        
         }
 
         p.executeCueSet1 = (note) => {
-            console.log(note);
+            const { currentCue } = note;
+            if(currentCue % 10 === 1) {
+                p.clear();
+                p.flowers = Array(20).fill(null);
+            }
             const x =  p.random(p.width / 8, p.width - p.width / 8);
             const y =  p.random(p.height / 8, p.height - p.height / 8)
-            const flower = new Flower(
-                p,
-                x,
-                y,
-            );
-            flower.draw();
+            const hue = p.bgHue + 180 > 360 ? p.bgHue - 180 : p.bgHue + 180;
+            p.flowers[(currentCue % 10 - 1)] =
+                new Flower(
+                    p,
+                    x,
+                    y,
+                    hue
+                );
+            p.draw();
             setTimeout(
                 function () {
-                    const flower2 = new Flower(
-                        p,
-                        x + p.random(-(p.width / 16), (p.width / 16)),
-                        y + p.random(-(p.height / 16), (p.height / 16)),
-                    );
-                    flower2.draw();
+                    p.flowers[(currentCue % 10 - 1) + 10] =
+                        new Flower(
+                            p,
+                            x + p.random(-(p.width / 16), (p.width / 16)),
+                            y + p.random(-(p.height / 16), (p.height / 16)),
+                            hue
+                        );
+                    p.draw();
                 },
                 433
             );
+        }
+
+        p.executeCueSet2 = (note) => {
+            const { currentCue } = note;
+            p.bgSaturation = p.bgSaturation + 10;
+            p.bgBrightness = p.bgBrightness + 10;
+            if(currentCue % 6 === 0){
+                p.bgHue = p.random(0, 360);
+                p.bgSaturation = 30;
+                p.bgBrightness = 30;
+            }
+            p.draw();
         }
 
         p.hasStarted = false;
