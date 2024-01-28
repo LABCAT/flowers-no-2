@@ -64,19 +64,23 @@ const P5SketchWithAudio = () => {
                 }
             }
         }
+
+        p.hueSet = [30, 90, 150, 210, 270, 330];
         
         p.bgHue = 0;
 
-        p.bgSaturation = 0;
+        p.bgSaturation = 30;
         
-        p.bgBrightness = 0;
+        p.bgBrightness = 50;
 
         p.flowers = Array(20).fill(null);
 
         p.setup = () => {
             p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
+            p.bgHue = p.random(p.hueSet);
             p.colorMode(p.HSB);
             p.background(p.bgHue, p.bgSaturation, p.bgBrightness);
+            p.stroke(0, 0, 100);
             p.noLoop();
         }
 
@@ -92,31 +96,50 @@ const P5SketchWithAudio = () => {
             }
         }
 
+        p.getNextCoordinates = () => {
+            let x, y, overlapping = true;
+            do {
+                x = p.random(p.width / 8, p.width - p.width / 8);
+                y = p.random(p.height / 8, p.height - p.height / 8);
+                // Check for overlapping positions
+                overlapping = p.flowers.some(flower => {
+                    if (flower) {
+                        const d = p.dist(x, y, flower.x, flower.y);
+                        return d < flower.pistilRadius * 2; // You may adjust this threshold
+                    }
+                    return false; // Handle null flower
+                });
+            } while (overlapping);
+
+            return { x, y };
+        };
+
+
         p.executeCueSet1 = (note) => {
             const { currentCue } = note;
             if(currentCue % 10 === 1) {
                 p.clear();
                 p.flowers = Array(20).fill(null);
             }
-            const x =  p.random(p.width / 8, p.width - p.width / 8);
-            const y =  p.random(p.height / 8, p.height - p.height / 8)
-            const hue = p.bgHue + 180 > 360 ? p.bgHue - 180 : p.bgHue + 180;
+            let coOrds = p.getNextCoordinates();
+            const hue = p.random(p.hueSet.filter(hue => hue !== p.bgHue));
             p.flowers[(currentCue % 10 - 1)] =
                 new Flower(
                     p,
-                    x,
-                    y,
+                    coOrds.x,
+                    coOrds.y,
                     hue
                 );
             p.draw();
             setTimeout(
                 function () {
+                    coOrds = p.getNextCoordinates();
                     p.flowers[(currentCue % 10 - 1) + 10] =
                         new Flower(
                             p,
-                            x + p.random(-(p.width / 16), (p.width / 16)),
-                            y + p.random(-(p.height / 16), (p.height / 16)),
-                            hue
+                            coOrds.x,
+                            coOrds.y,
+                            hue + p.random(-30, 30)
                         );
                     p.draw();
                 },
@@ -127,11 +150,11 @@ const P5SketchWithAudio = () => {
         p.executeCueSet2 = (note) => {
             const { currentCue } = note;
             p.bgSaturation = p.bgSaturation + 10;
-            p.bgBrightness = p.bgBrightness + 10;
+            p.bgBrightness = p.bgBrightness + 5;
             if(currentCue % 6 === 0){
-                p.bgHue = p.random(0, 360);
+                p.bgHue = p.random(p.hueSet.filter(hue => hue !== p.bgHue));
                 p.bgSaturation = 30;
-                p.bgBrightness = 30;
+                p.bgBrightness = 50;
             }
             p.draw();
         }

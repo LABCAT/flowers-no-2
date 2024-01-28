@@ -1,31 +1,32 @@
 
 export default class Flower {
 
-    constructor(p5, x, y, hue) {
-        this.p = p5;
+    constructor(p, x, y, hue) {
+        this.p = p;
         this.x = x;
         this.y = y;
-        this.petalCount = p5.random(2, 16);
-        this.pistilRadius = p5.random(10, 20);
-        this.cp1x = Math.random() * p5.random(20, 80);
+        this.petalCount = p.random(2, 16);
+        this.pistilRadius = p.random(p.width / 64, p.width / 32);
+        this.cp1x = Math.random() * p.random(p.width / 32, p.width / 16);
         this.cp1y = 0;
-        this.cp2x = Math.random() * p5.random(20, 80);
-        this.cp2y = Math.random() * p5.random(20, 80);
-        this.cp3x = Math.random() * p5.random(20, 80);
-        this.cp3y = Math.random() * p5.random(20, 80);
+        this.cp2x = Math.random() * p.random(p.width / 32, p.width / 16);
+        this.cp2y = Math.random() * p.random(p.width / 32, p.width / 16);
+        this.cp3x = Math.random() * p.random(p.width / 32, p.width / 16);
+        this.cp3y = Math.random() * p.random(p.width / 32, p.width / 16);
         this.cp4x = 0;
         this.cp4y = 0;
         this.petalColor = {
             r: hue, 
-            g: this.p.random(50, 100), 
-            b: this.p.random(50, 100),
-            a: this.p.random(50, 100),
+            g: p.random(50, 100), 
+            b: p.random(50, 100),
+            a: p.random(0.25, 1),
         }
+        this.petalHues = this.generatePetalHues(hue);
         this.pistilColor = {
             r: hue + 90 > 360 ? hue - 90 : hue + 90, 
-            g: this.p.random(50, 100), 
-            b: this.p.random(50, 100),
-            a: this.p.random(50, 100),
+            g: p.random(50, 100), 
+            b: p.random(50, 100),
+            a: p.random(0.25, 1),
         }
     }
 
@@ -37,22 +38,34 @@ export default class Flower {
         this.p.endShape();
     }
 
+    generatePetalHues (hue) {
+        const array = [];
+        let newHue = hue;
+        for (let i = 0; i < this.petalCount * 2; i++) {
+            newHue = this.randomHue(newHue);
+            array.push(newHue)
+        }
+        return array;
+    }
+
+    randomHue (hue) {
+        const adjustment = this.p.random(-10, 10); 
+        return hue + adjustment > 360 ? hue - 360 + adjustment : hue + adjustment;
+    } 
+
     draw () {
         this.p.translate(this.x, this.y);
         this.p.push();
-        this.p.noStroke();
-        let hue = this.petalColor.r;
         for (let i = 0; i < this.petalCount * 2; i++) {
             this.p.fill(
-                hue, 
+                this.petalHues[i], 
                 this.petalColor.g,
                 this.petalColor.b,
                 this.petalColor.a
             );
-            this.p.strokeWeight(.25);
+            this.p.strokeWeight(.5);
             this.makePetal();
             this.p.rotate(this.p.PI / this.petalCount);
-            hue = hue + 10 > 360 ? hue - 360 + 10 : hue + 10;
         }
         this.p.fill(
             this.pistilColor.r, 
